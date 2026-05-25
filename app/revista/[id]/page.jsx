@@ -9,17 +9,20 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mi
 
 function useBookSize() {
   const [size, setSize] = useState({ width: 550, height: 750 })
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const calcular = () => {
       const screenW = window.innerWidth
       if (screenW < 480) {
-        const w = Math.floor(screenW * 0.92)
-        setSize({ width: w, height: Math.floor(w * 1.4) })
+        setIsMobile(true)
+        setSize({ width: screenW, height: 0 })
       } else if (screenW < 768) {
+        setIsMobile(false)
         const w = Math.floor(screenW * 0.45)
         setSize({ width: w, height: Math.floor(w * 1.4) })
       } else {
+        setIsMobile(false)
         setSize({ width: 550, height: 750 })
       }
     }
@@ -28,14 +31,13 @@ function useBookSize() {
     return () => window.removeEventListener('resize', calcular)
   }, [])
 
-  return size
+  return { ...size, isMobile }
 }
 
 export default function VisorRevista({ params }) {
   const [paginas, setPaginas] = useState([])
   const [cargando, setCargando] = useState(true)
-  const [zoom, setZoom] = useState(1)
-  const { width, height } = useBookSize()
+  const { width, height, isMobile } = useBookSize()
   const router = useRouter()
 
   useEffect(() => {
@@ -65,62 +67,51 @@ export default function VisorRevista({ params }) {
     setCargando(false)
   }
 
-  const zoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
-  const zoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
-
   if (cargando) return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
       Cargando revista...
     </div>
   )
 
+  // MÓVIL: scroll vertical con zoom nativo
+  if (isMobile) return (
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center p-4">
+      <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white self-start">
+        ← Volver al dashboard
+      </button>
+      <p className="text-gray-500 text-xs mb-4">Pellizca para hacer zoom</p>
+      <div className="w-full flex flex-col gap-2">
+        {paginas.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+            className="rounded shadow-md"
+          />
+        ))}
+      </div>
+    </div>
+  )
+
+  // TABLET Y DESKTOP: flipbook con efecto de libro
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
       <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white">
         ← Volver al dashboard
       </button>
-
-      {/* Botones de zoom */}
-      <div className="flex items-center gap-4 mb-4">
-        <button
-          onClick={zoomOut}
-          className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 text-xl font-bold"
-        >
-          −
-        </button>
-        <span className="text-gray-400 text-sm">{Math.round(zoom * 100)}%</span>
-        <button
-          onClick={zoomIn}
-          className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 text-xl font-bold"
-        >
-          +
-        </button>
-      </div>
-
-      {/* Visor con zoom aplicado a las imágenes */}
-      <div style={{ overflow: 'auto', maxWidth: '100%' }}>
-        <HTMLFlipBook
-          width={width}
-          height={height}
-          showCover={true}
-          mobileScrollSupport={true}
-          useMouseEvents={true}
-        >
-          {paginas.map((img, i) => (
-            <div key={i} className="bg-white overflow-auto">
-              <img
-                src={img}
-                style={{
-                  width: `${zoom * 100}%`,
-                  height: 'auto',
-                  objectFit: 'cover',
-                  transformOrigin: 'top left'
-                }}
-              />
-            </div>
-          ))}
-        </HTMLFlipBook>
-      </div>
+      <HTMLFlipBook
+        width={width}
+        height={height}
+        showCover={true}
+        mobileScrollSupport={true}
+        useMouseEvents={true}
+      >
+        {paginas.map((img, i) => (
+          <div key={i} className="bg-white">
+            <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        ))}
+      </HTMLFlipBook>
     </div>
   )
 }
