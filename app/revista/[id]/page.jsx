@@ -7,9 +7,37 @@ import * as pdfjsLib from 'pdfjs-dist'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
+function useBookSize() {
+  const [size, setSize] = useState({ width: 550, height: 750 })
+
+  useEffect(() => {
+    const calcular = () => {
+      const screenW = window.innerWidth
+      if (screenW < 480) {
+        // Móvil: una sola página que ocupa casi toda la pantalla
+        const w = Math.floor(screenW * 0.92)
+        setSize({ width: w, height: Math.floor(w * 1.4) })
+      } else if (screenW < 768) {
+        // Tablet pequeña
+        const w = Math.floor(screenW * 0.45)
+        setSize({ width: w, height: Math.floor(w * 1.4) })
+      } else {
+        // Desktop
+        setSize({ width: 550, height: 750 })
+      }
+    }
+    calcular()
+    window.addEventListener('resize', calcular)
+    return () => window.removeEventListener('resize', calcular)
+  }, [])
+
+  return size
+}
+
 export default function VisorRevista({ params }) {
   const [paginas, setPaginas] = useState([])
   const [cargando, setCargando] = useState(true)
+  const { width, height } = useBookSize()
   const router = useRouter()
 
   useEffect(() => {
@@ -48,9 +76,15 @@ export default function VisorRevista({ params }) {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
       <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white">
-        Volver al dashboard
+        ← Volver al dashboard
       </button>
-      <HTMLFlipBook width={550} height={750} showCover={true}>
+      <HTMLFlipBook
+        width={width}
+        height={height}
+        showCover={true}
+        mobileScrollSupport={true}
+        useMouseEvents={true}
+      >
         {paginas.map((img, i) => (
           <div key={i} className="bg-white">
             <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
