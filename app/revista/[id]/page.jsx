@@ -7,23 +7,27 @@ import * as pdfjsLib from 'pdfjs-dist'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
-function useBookSize() {
-  const [size, setSize] = useState({ width: 550, height: 750 })
-  const [isMobile, setIsMobile] = useState(false)
+function useVisorMode() {
+  const [mode, setMode] = useState('flipbook')
+  const [bookSize, setBookSize] = useState({ width: 550, height: 750 })
 
   useEffect(() => {
     const calcular = () => {
       const screenW = window.innerWidth
-      if (screenW < 480) {
-        setIsMobile(true)
-        setSize({ width: screenW, height: 0 })
-      } else if (screenW < 768) {
-        setIsMobile(false)
-        const w = Math.floor(screenW * 0.45)
-        setSize({ width: w, height: Math.floor(w * 1.4) })
+      const estactil = window.matchMedia('(pointer: coarse)').matches
+
+      if (estactil && screenW < 1024) {
+        // Celular en cualquier orientación → scroll vertical
+        setMode('scroll')
       } else {
-        setIsMobile(false)
-        setSize({ width: 550, height: 750 })
+        // Tablet grande o desktop → flipbook
+        setMode('flipbook')
+        if (screenW < 1024) {
+          const w = Math.floor(screenW * 0.45)
+          setBookSize({ width: w, height: Math.floor(w * 1.4) })
+        } else {
+          setBookSize({ width: 550, height: 750 })
+        }
       }
     }
     calcular()
@@ -31,13 +35,13 @@ function useBookSize() {
     return () => window.removeEventListener('resize', calcular)
   }, [])
 
-  return { ...size, isMobile }
+  return { mode, bookSize }
 }
 
 export default function VisorRevista({ params }) {
   const [paginas, setPaginas] = useState([])
   const [cargando, setCargando] = useState(true)
-  const { width, height, isMobile } = useBookSize()
+  const { mode, bookSize } = useVisorMode()
   const router = useRouter()
 
   useEffect(() => {
@@ -73,8 +77,8 @@ export default function VisorRevista({ params }) {
     </div>
   )
 
-  // MÓVIL: scroll vertical con zoom nativo
-  if (isMobile) return (
+  // CELULAR: scroll vertical con zoom nativo
+  if (mode === 'scroll') return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center p-4">
       <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white self-start">
         ← Volver al dashboard
@@ -93,15 +97,15 @@ export default function VisorRevista({ params }) {
     </div>
   )
 
-  // TABLET Y DESKTOP: flipbook con efecto de libro
+  // TABLET GRANDE Y DESKTOP: flipbook
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
       <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white">
         ← Volver al dashboard
       </button>
       <HTMLFlipBook
-        width={width}
-        height={height}
+        width={bookSize.width}
+        height={bookSize.height}
         showCover={true}
         mobileScrollSupport={true}
         useMouseEvents={true}
