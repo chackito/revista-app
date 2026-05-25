@@ -14,15 +14,12 @@ function useBookSize() {
     const calcular = () => {
       const screenW = window.innerWidth
       if (screenW < 480) {
-        // Móvil: una sola página que ocupa casi toda la pantalla
         const w = Math.floor(screenW * 0.92)
         setSize({ width: w, height: Math.floor(w * 1.4) })
       } else if (screenW < 768) {
-        // Tablet pequeña
         const w = Math.floor(screenW * 0.45)
         setSize({ width: w, height: Math.floor(w * 1.4) })
       } else {
-        // Desktop
         setSize({ width: 550, height: 750 })
       }
     }
@@ -37,6 +34,7 @@ function useBookSize() {
 export default function VisorRevista({ params }) {
   const [paginas, setPaginas] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [zoom, setZoom] = useState(1)
   const { width, height } = useBookSize()
   const router = useRouter()
 
@@ -67,6 +65,9 @@ export default function VisorRevista({ params }) {
     setCargando(false)
   }
 
+  const zoomIn = () => setZoom(z => Math.min(z + 0.25, 2.5))
+  const zoomOut = () => setZoom(z => Math.max(z - 0.25, 0.5))
+
   if (cargando) return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
       Cargando revista...
@@ -78,19 +79,48 @@ export default function VisorRevista({ params }) {
       <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white">
         ← Volver al dashboard
       </button>
-      <HTMLFlipBook
-        width={width}
-        height={height}
-        showCover={true}
-        mobileScrollSupport={true}
-        useMouseEvents={true}
-      >
-        {paginas.map((img, i) => (
-          <div key={i} className="bg-white">
-            <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        ))}
-      </HTMLFlipBook>
+
+      {/* Botones de zoom */}
+      <div className="flex items-center gap-4 mb-4">
+        <button
+          onClick={zoomOut}
+          className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 text-xl font-bold"
+        >
+          −
+        </button>
+        <span className="text-gray-400 text-sm">{Math.round(zoom * 100)}%</span>
+        <button
+          onClick={zoomIn}
+          className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 text-xl font-bold"
+        >
+          +
+        </button>
+      </div>
+
+      {/* Visor con zoom aplicado a las imágenes */}
+      <div style={{ overflow: 'auto', maxWidth: '100%' }}>
+        <HTMLFlipBook
+          width={width}
+          height={height}
+          showCover={true}
+          mobileScrollSupport={true}
+          useMouseEvents={true}
+        >
+          {paginas.map((img, i) => (
+            <div key={i} className="bg-white overflow-auto">
+              <img
+                src={img}
+                style={{
+                  width: `${zoom * 100}%`,
+                  height: 'auto',
+                  objectFit: 'cover',
+                  transformOrigin: 'top left'
+                }}
+              />
+            </div>
+          ))}
+        </HTMLFlipBook>
+      </div>
     </div>
   )
 }
