@@ -22,9 +22,14 @@ export default function Dashboard() {
   }, [])
 
   const cargarRevistas = async () => {
-   const { data } = await supabase.from('revistas').select('*').order('id', { ascending: true })
-    setRevistas(data || [])
-  }
+  const { data } = await supabase.from('revistas').select('*')
+  const ordenadas = (data || []).sort((a, b) => {
+    const numA = parseInt(a.titulo.split(' ').pop())
+    const numB = parseInt(b.titulo.split(' ').pop())
+    return numA - numB
+  })
+  setRevistas(ordenadas)
+}
 
   const cerrarSesion = async () => {
     await supabase.auth.signOut()
