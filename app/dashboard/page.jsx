@@ -22,7 +22,7 @@ export default function Dashboard() {
   }, [])
 
   const cargarRevistas = async () => {
-    const { data } = await supabase.from('revistas').select('*').order('titulo', { ascending: true })
+   const { data } = await supabase.from('revistas').select('*').order('id', { ascending: true })
     setRevistas(data || [])
   }
 
