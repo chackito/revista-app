@@ -80,8 +80,8 @@ export default function VisorRevista({ params }) {
   // CELULAR: scroll vertical con zoom nativo
   if (mode === 'scroll') return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center p-4">
-      <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white self-start">
-        ← Volver al dashboard
+      <button onClick={() => router.push('/revistas')} className="mb-4 text-gray-400 hover:text-white self-start">
+        ← Volver al menú
       </button>
       <p className="text-gray-500 text-xs mb-4">Pellizca para hacer zoom</p>
       <div className="w-full flex flex-col gap-2">
@@ -100,8 +100,8 @@ export default function VisorRevista({ params }) {
   // TABLET GRANDE Y DESKTOP: flipbook
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
-      <button onClick={() => router.push('/dashboard')} className="mb-4 text-gray-400 hover:text-white">
-        ← Volver al dashboard
+      <button onClick={() => router.push('/revistas')} className="mb-4 text-gray-400 hover:text-white">
+        ← Volver al menú
       </button>
       <HTMLFlipBook
         width={bookSize.width}
