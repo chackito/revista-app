@@ -50,7 +50,11 @@ export default function VisorRevista({ params }) {
       if (!data.user) { router.push('/auth'); return }
       const resolvedParams = await params
       const { data: revista } = await supabase.from('revistas').select('*').eq('id', resolvedParams.id).single()
-      if (revista) cargarPDF(revista.pdf_url)
+if (revista) {
+  const path = decodeURIComponent(revista.pdf_url.split('/Revistas/')[1])
+  const { data: signedData } = await supabase.storage.from('Revistas').createSignedUrl(path, 3600)
+  if (signedData) cargarPDF(signedData.signedUrl)
+}
     }
     init()
   }, [])
