@@ -39,9 +39,11 @@ export default function Dashboard() {
     setCargandoAudios(false)
   }
 
-  const irASeccion = (id) => {
+    const irASeccion = (id) => {
     if (id === 'revistas') {
       router.push('/revistas')
+    } else if (id === 'boletines') {
+      router.push('/boletines')
     } else {
       setSeccion(id)
       if (id === 'audios') {
@@ -124,11 +126,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {seccion === 'boletines' && (
-          <div className="bg-gray-800 rounded-xl p-8 text-center text-gray-400 border border-gray-700">
-            Próximamente: contenido de boletines
-          </div>
-        )}
       </div>
     </div>
   )
