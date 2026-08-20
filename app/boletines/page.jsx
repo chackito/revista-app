@@ -37,24 +37,17 @@ export default function Boletines() {
 
       <h1 className="text-3xl font-bold mb-8">Boletines</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="flex flex-col gap-3 max-w-2xl">
         {boletines.map((b) => (
           <div
             key={b.id}
             onClick={() => router.push(`/boletin/${b.id}`)}
-            className="bg-gray-800 rounded-xl p-4 cursor-pointer hover:bg-gray-700 transition flex flex-col items-center"
+            className="bg-gray-800 rounded-lg px-5 py-4 cursor-pointer hover:bg-gray-700 transition flex justify-between items-center"
           >
-            <div className="w-full aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
-              {b.portada_url ? (
-                <img src={b.portada_url} alt={b.titulo} className="w-full h-full object-contain" />
-              ) : (
-                b.titulo
-              )}
-            </div>
-            <p className="text-center text-sm mb-3">{b.titulo}</p>
+            <span className="font-semibold">{b.titulo}</span>
             <button
               onClick={(e) => { e.stopPropagation(); router.push(`/boletin/${b.id}`) }}
-              className="w-full bg-green-600 hover:bg-green-700 py-2 rounded-lg font-bold"
+              className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg font-bold text-sm"
             >
               Leer
             </button>
