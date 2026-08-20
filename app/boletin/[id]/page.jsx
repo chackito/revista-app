@@ -47,8 +47,12 @@ export default function VisorBoletin({ params }) {
       const { data } = await supabase.auth.getUser()
       if (!data.user) { router.push('/auth'); return }
       const resolvedParams = await params
-      const { data: boletin } = await supabase.from('boletines').select('*').eq('id', resolvedParams.id).single()
-      if (boletin) cargarPDF(boletin.pdf_url)
+     const { data: boletin } = await supabase.from('boletines').select('*').eq('id', resolvedParams.id).single()
+if (boletin) {
+  const path = decodeURIComponent(boletin.pdf_url.split('/Boletines/')[1])
+  const { data: signedData } = await supabase.storage.from('Boletines').createSignedUrl(path, 3600)
+  if (signedData) cargarPDF(signedData.signedUrl)
+}
     }
     init()
   }, [])
