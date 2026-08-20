@@ -13,15 +13,23 @@ export default function Revistas() {
   }, [])
 
   const cargarRevistas = async () => {
-    const { data } = await supabase.from('revistas').select('*')
-    const ordenadas = (data || []).sort((a, b) => {
-      const numA = parseInt(a.titulo.replace(/\D/g, ''))
-      const numB = parseInt(b.titulo.replace(/\D/g, ''))
-      return numA - numB
-    })
-    setRevistas(ordenadas)
-    setCargando(false)
-  }
+  const { data } = await supabase.from('revistas').select('*')
+  const conPortadas = await Promise.all((data || []).map(async (r) => {
+    if (r.portada_url) {
+      const path = decodeURIComponent(r.portada_url.split('/Revistas/')[1])
+      const { data: signedData } = await supabase.storage.from('Revistas').createSignedUrl(path, 3600)
+      return { ...r, portada_url: signedData?.signedUrl || null }
+    }
+    return r
+  }))
+  const ordenadas = conPortadas.sort((a, b) => {
+    const numA = parseInt(a.titulo.replace(/\D/g, ''))
+    const numB = parseInt(b.titulo.replace(/\D/g, ''))
+    return numA - numB
+  })
+  setRevistas(ordenadas)
+  setCargando(false)
+}
 
   if (cargando) return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
