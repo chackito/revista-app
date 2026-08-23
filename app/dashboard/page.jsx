@@ -103,22 +103,36 @@ export default function Dashboard() {
             )}
 
             {!cargandoAudios && audios.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {audios.map(audio => (
-                  <div
-                    key={audio.id}
-                    className="bg-gray-800 rounded-xl p-6 border border-gray-700 flex flex-col gap-3"
-                  >
-                    <div>
-                      <h3 className="text-xl font-bold">{audio.titulo}</h3>
-                      {audio.descripcion && (
-                        <p className="text-gray-400 text-sm">{audio.descripcion}</p>
-                      )}
+              <div className="flex flex-col gap-10">
+                {Object.entries(
+                  audios.reduce((grupos, audio) => {
+                    const categoria = audio.categoria || 'General'
+                    if (!grupos[categoria]) grupos[categoria] = []
+                    grupos[categoria].push(audio)
+                    return grupos
+                  }, {})
+                ).map(([categoria, audiosCategoria]) => (
+                  <div key={categoria}>
+                    <h2 className="text-2xl font-bold mb-4 text-purple-300">{categoria}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {audiosCategoria.map(audio => (
+                        <div
+                          key={audio.id}
+                          className="bg-gray-800 rounded-xl p-6 border border-gray-700 flex flex-col gap-3"
+                        >
+                          <div>
+                            <h3 className="text-xl font-bold">{audio.titulo}</h3>
+                            {audio.descripcion && (
+                              <p className="text-gray-400 text-sm">{audio.descripcion}</p>
+                            )}
+                          </div>
+                          <audio controls className="w-full" preload="none">
+                            <source src={audio.audio_url} type="audio/mpeg" />
+                            Tu navegador no soporta el elemento de audio.
+                          </audio>
+                        </div>
+                      ))}
                     </div>
-                    <audio controls className="w-full" preload="none">
-                      <source src={audio.audio_url} type="audio/mpeg" />
-                      Tu navegador no soporta el elemento de audio.
-                    </audio>
                   </div>
                 ))}
               </div>
