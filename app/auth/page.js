@@ -6,28 +6,21 @@ import { useRouter } from 'next/navigation'
 export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLogin, setIsLogin] = useState(true)
   const [mensaje, setMensaje] = useState('')
   const router = useRouter()
 
   const handleAuth = async () => {
     setMensaje('')
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) return setMensaje(error.message)
-      router.push('/dashboard')
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) return setMensaje(error.message)
-      setMensaje('¡Registro exitoso! Revisa tu email para confirmar tu cuenta.')
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return setMensaje(error.message)
+    router.push('/dashboard')
   }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-xl w-full max-w-md">
         <h1 className="text-2xl font-bold text-white mb-6 text-center">
-          {isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
+          Iniciar sesión
         </h1>
         <input
           type="email"
@@ -48,14 +41,8 @@ export default function AuthPage() {
           onClick={handleAuth}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-lg mb-4"
         >
-          {isLogin ? 'Entrar' : 'Registrarse'}
+          Entrar
         </button>
-        <p
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-gray-400 text-center cursor-pointer hover:text-white"
-        >
-          {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
-        </p>
       </div>
     </div>
   )
